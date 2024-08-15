@@ -6,8 +6,9 @@ import Button from "../components/Button";
 const URL = `${process.env.REACT_APP_API_URL}`;
 
 const Home = () => {
-  const [personals, setpersonals] = useState([]);
+  const [personals, setPersonals] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null); // Düzenlenen kişiyi takip et
   const [newPerson, setNewPerson] = useState({
     firstname: "",
     lastname: "",
@@ -15,13 +16,13 @@ const Home = () => {
     position: "",
   });
 
-  console.log(isAdding)
-
+  // Girdi değişikliklerini ele al
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPerson((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Yeni kişi ekle
   const addPerson = async () => {
     try {
       await axios.post(`${URL}`, newPerson, {
@@ -30,7 +31,7 @@ const Home = () => {
         },
       });
       await getPersonal();
-      setIsAdding(false); 
+      setIsAdding(false);
       setNewPerson({
         firstname: "",
         lastname: "",
@@ -42,34 +43,64 @@ const Home = () => {
     }
   };
 
-  const DeletePerson = async (id) => {
+  // Kişiyi güncelle
+  const updatePerson = async () => {
     try {
-      await axios.delete(`${URL}${id}`);
+      await axios.put(`${URL}${editingId}/`, newPerson, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       await getPersonal();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const getPersonal = async () => {
-    try {
-      const { data } = await axios.get(URL);
-      setpersonals(data);
+      setEditingId(null);
+      setNewPerson({
+        firstname: "",
+        lastname: "",
+        email: "",
+        position: "",
+      });
     } catch (error) {
       console.error("Hata:", error.message);
     }
   };
 
+  // Kişiyi sil
+  const deletePerson = async (id) => {
+    try {
+      await axios.delete(`${URL}${id}/`);
+      await getPersonal();
+    } catch (error) {
+      console.error("Hata:", error.message);
+    }
+  };
+
+  // Kişi verilerini al
+  const getPersonal = async () => {
+    try {
+      const { data } = await axios.get(URL);
+      setPersonals(data);
+    } catch (error) {
+      console.error("Hata:", error.message);
+    }
+  };
+
+  // Etkinlik başladığında kişileri al
   useEffect(() => {
     getPersonal();
   }, []);
+
+  // Düzenleme moduna geç
+  const startEditing = (person) => {
+    setNewPerson(person);
+    setEditingId(person.id);
+  };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl mb-4">Personal List</h1>
       <table className="min-w-full">
         <thead>
-          <tr className=" bg-gray-200">
+          <tr className="bg-gray-200">
             <th className="py-2 px-4 border border-1 border-gray-400">Firstname</th>
             <th className="py-2 px-4 border border-1 border-gray-400">Lastname</th>
             <th className="py-2 px-4 border border-1 border-gray-400">Email</th>
@@ -78,16 +109,74 @@ const Home = () => {
           </tr>
         </thead>
         <tbody>
-          {personals?.map(({ id, firstname, lastname, email, position }) => (
-            <tr key={id} className="border-b border-gray-300">
-              <td className="py-2 px-4 border border-gray-300">{firstname}</td>
-              <td className="py-2 px-4 border border-gray-300">{lastname}</td>
-              <td className="py-2 px-4 border border-gray-300">{email}</td>
-              <td className="py-2 px-4 border border-gray-300">{position}</td>
-              <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
-                <Button onClick={() => DeletePerson(id)} butonName={<MdDelete />} />
-                <Button butonName={<MdEdit />} />
-              </td>
+          {personals?.map((person) => (
+            <tr key={person.id} className="border-b border-gray-300">
+              {editingId === person.id ? (
+                <>
+                  <td className="py-2 px-4 border border-gray-300">
+                    <input
+                      type="text"
+                      name="firstname"
+                      value={newPerson.firstname}
+                      onChange={handleInputChange}
+                      className="w-full"
+                    />
+                  </td>
+                  <td className="py-2 px-4 border border-gray-300">
+                    <input
+                      type="text"
+                      name="lastname"
+                      value={newPerson.lastname}
+                      onChange={handleInputChange}
+                      className="w-full"
+                    />
+                  </td>
+                  <td className="py-2 px-4 border border-gray-300">
+                    <input
+                      type="email"
+                      name="email"
+                      value={newPerson.email}
+                      onChange={handleInputChange}
+                      className="w-full"
+                    />
+                  </td>
+                  <td className="py-2 px-4 border border-gray-300">
+                    <input
+                      type="text"
+                      name="position"
+                      value={newPerson.position}
+                      onChange={handleInputChange}
+                      className="w-full"
+                    />
+                  </td>
+                  <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
+                    <Button onClick={updatePerson} butonName="✔️" />
+                    <Button
+                      onClick={() => {
+                        setEditingId(null);
+                        setNewPerson({
+                          firstname: "",
+                          lastname: "",
+                          email: "",
+                          position: "",
+                        });
+                      }}
+                      butonName="❌"
+                    />
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td className="py-2 px-4 border border-gray-300">{person.firstname}</td>
+                  <td className="py-2 px-4 border border-gray-300">{person.lastname}</td>
+                  <td className="py-2 px-4 border border-gray-300">{person.email}</td>
+                  <td className="py-2 px-4 border border-gray-300">{person.position}</td>
+                  <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
+                    <Button onClick={() => deletePerson(person.id)} butonName={<MdDelete />} />
+                    <Button onClick={() => startEditing(person)} butonName={<MdEdit />} />
+                  </td>
+                </>
+              )}
             </tr>
           ))}
           {isAdding && (
@@ -130,12 +219,13 @@ const Home = () => {
               </td>
               <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
                 <Button onClick={addPerson} butonName="✔️" />
+                <Button onClick={() => setIsAdding(false)} butonName="❌" />
               </td>
             </tr>
           )}
         </tbody>
       </table>
-      {!isAdding && (
+      {!isAdding && !editingId && (
         <Button
           onClick={() => setIsAdding(true)}
           butonName={"Add Person"}
