@@ -15,6 +15,8 @@ const Home = () => {
     position: "",
   });
 
+  console.log(isAdding)
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPerson((prev) => ({ ...prev, [name]: value }));
@@ -28,7 +30,7 @@ const Home = () => {
         },
       });
       await getPersonal();
-      setIsAdding(!isAdding); 
+      setIsAdding(false); 
       setNewPerson({
         firstname: "",
         lastname: "",
@@ -40,7 +42,14 @@ const Home = () => {
     }
   };
 
- 
+  const DeletePerson = async (id) => {
+    try {
+      await axios.delete(`${URL}${id}`);
+      await getPersonal();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const getPersonal = async () => {
     try {
@@ -76,7 +85,7 @@ const Home = () => {
               <td className="py-2 px-4 border border-gray-300">{email}</td>
               <td className="py-2 px-4 border border-gray-300">{position}</td>
               <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
-                <Button butonName={<MdDelete />} />
+                <Button onClick={() => DeletePerson(id)} butonName={<MdDelete />} />
                 <Button butonName={<MdEdit />} />
               </td>
             </tr>
