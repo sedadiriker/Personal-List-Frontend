@@ -8,7 +8,7 @@ const URL = `${process.env.REACT_APP_API_URL}`;
 const Home = () => {
   const [personals, setPersonals] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
-  const [editingId, setEditingId] = useState(null); // Düzenlenen kişiyi takip et
+  const [editingId, setEditingId] = useState(null); 
   const [newPerson, setNewPerson] = useState({
     firstname: "",
     lastname: "",
@@ -16,13 +16,11 @@ const Home = () => {
     position: "",
   });
 
-  // Girdi değişikliklerini ele al
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPerson((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Yeni kişi ekle
   const addPerson = async () => {
     try {
       await axios.post(`${URL}`, newPerson, {
@@ -43,7 +41,6 @@ const Home = () => {
     }
   };
 
-  // Kişiyi güncelle
   const updatePerson = async () => {
     try {
       await axios.put(`${URL}${editingId}/`, newPerson, {
@@ -64,7 +61,6 @@ const Home = () => {
     }
   };
 
-  // Kişiyi sil
   const deletePerson = async (id) => {
     try {
       await axios.delete(`${URL}${id}/`);
@@ -74,7 +70,6 @@ const Home = () => {
     }
   };
 
-  // Kişi verilerini al
   const getPersonal = async () => {
     try {
       const { data } = await axios.get(URL);
@@ -84,12 +79,10 @@ const Home = () => {
     }
   };
 
-  // Etkinlik başladığında kişileri al
   useEffect(() => {
     getPersonal();
   }, []);
 
-  // Düzenleme moduna geç
   const startEditing = (person) => {
     setNewPerson(person);
     setEditingId(person.id);
