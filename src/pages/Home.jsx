@@ -219,7 +219,7 @@ const Home = () => {
               </td>
               <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
                 <Button onClick={addPerson} butonName="✔️" />
-                <Button onClick={() => setIsAdding(false)} butonName="❌" />
+                <Button onClick={() => setIsAdding(false)} butonName="X" className="text-red-700" />
               </td>
             </tr>
           )}
