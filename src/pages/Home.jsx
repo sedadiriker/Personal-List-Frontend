@@ -1,28 +1,53 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { MdDelete, MdEdit } from "react-icons/md";
+import Button from "../components/Button";
+
+const URL = `${process.env.REACT_APP_API_URL}`;
 
 const Home = () => {
   const [personals, setpersonals] = useState([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newPerson, setNewPerson] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+    position: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewPerson((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const addPerson = async () => {
+    try {
+      await axios.post(`${URL}`, newPerson, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      await getPersonal();
+      setIsAdding(!isAdding); 
+      setNewPerson({
+        firstname: "",
+        lastname: "",
+        email: "",
+        position: "",
+      });
+    } catch (error) {
+      console.error("Hata:", error.message);
+    }
+  };
+
+ 
 
   const getPersonal = async () => {
-    const URL = "http://127.0.0.1:8000/api/personallists/";
-
     try {
       const { data } = await axios.get(URL);
       setpersonals(data);
     } catch (error) {
-      if (error.response) {
-        // Sunucu yanıtı varsa
-        console.error("Sunucu Hatası:", error.response.data);
-        console.error("Durum Kodu:", error.response.status);
-        console.error("Başlıklar:", error.response.headers);
-      } else if (error.request) {
-        // İstek yapıldı ama yanıt alınamadı
-        console.error("İstek Yapıldı, Yanıt Alınamadı:", error.request);
-      } else {
-        // Diğer hatalar
-        console.error("Hata:", error.message);
-      }
+      console.error("Hata:", error.message);
     }
   };
 
@@ -36,37 +61,78 @@ const Home = () => {
       <table className="min-w-full">
         <thead>
           <tr className=" bg-gray-200">
-            <th className="py-2 px-4 border border-1 border-gray-400">
-              Firstname
-            </th>
-            <th className="py-2 px-4 border border-1 border-gray-400">
-              Lastname
-            </th>
+            <th className="py-2 px-4 border border-1 border-gray-400">Firstname</th>
+            <th className="py-2 px-4 border border-1 border-gray-400">Lastname</th>
             <th className="py-2 px-4 border border-1 border-gray-400">Email</th>
-            <th className="py-2 px-4 border border-1 border-gray-400">
-              Position
-            </th>
+            <th className="py-2 px-4 border border-1 border-gray-400">Position</th>
+            <th className="py-2 px-4 border border-1 border-gray-400"></th>
           </tr>
         </thead>
         <tbody>
-          {personals.map(({id, firstname, lastname, email, position }) => (
+          {personals?.map(({ id, firstname, lastname, email, position }) => (
             <tr key={id} className="border-b border-gray-300">
-              <td className="py-2 px-4 border border-gray-300">
-                {firstname}
-              </td>
-              <td className="py-2 px-4 border border-gray-300">
-                {lastname}
-              </td>
-              <td className="py-2 px-4 border border-gray-300">
-                {email}
-              </td>
-              <td className="py-2 px-4 border border-gray-300">
-                {position}
+              <td className="py-2 px-4 border border-gray-300">{firstname}</td>
+              <td className="py-2 px-4 border border-gray-300">{lastname}</td>
+              <td className="py-2 px-4 border border-gray-300">{email}</td>
+              <td className="py-2 px-4 border border-gray-300">{position}</td>
+              <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
+                <Button butonName={<MdDelete />} />
+                <Button butonName={<MdEdit />} />
               </td>
             </tr>
           ))}
+          {isAdding && (
+            <tr className="border-b border-gray-300">
+              <td className="py-2 px-4 border border-gray-300">
+                <input
+                  type="text"
+                  name="firstname"
+                  value={newPerson.firstname}
+                  onChange={handleInputChange}
+                  className="w-full"
+                />
+              </td>
+              <td className="py-2 px-4 border border-gray-300">
+                <input
+                  type="text"
+                  name="lastname"
+                  value={newPerson.lastname}
+                  onChange={handleInputChange}
+                  className="w-full"
+                />
+              </td>
+              <td className="py-2 px-4 border border-gray-300">
+                <input
+                  type="email"
+                  name="email"
+                  value={newPerson.email}
+                  onChange={handleInputChange}
+                  className="w-full"
+                />
+              </td>
+              <td className="py-2 px-4 border border-gray-300">
+                <input
+                  type="text"
+                  name="position"
+                  value={newPerson.position}
+                  onChange={handleInputChange}
+                  className="w-full"
+                />
+              </td>
+              <td className="py-2 px-4 border border-gray-300 flex justify-center gap-2">
+                <Button onClick={addPerson} butonName="✔️" />
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
+      {!isAdding && (
+        <Button
+          onClick={() => setIsAdding(true)}
+          butonName={"Add Person"}
+          className="my-4"
+        />
+      )}
     </div>
   );
 };
