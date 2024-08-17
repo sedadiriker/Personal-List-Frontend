@@ -3,12 +3,17 @@ import axios from "axios";
 import { MdDelete, MdEdit } from "react-icons/md";
 import Button from "../components/Button";
 
-const URL = `${process.env.REACT_APP_API_URL}`;
+const URL = `${process.env.REACT_APP_API_URL}`
+
+const HEADERS = {
+  "Content-Type": "application/json",
+  "apikey": process.env.REACT_APP_SUPABASE_ANON_KEY
+};
 
 const Home = () => {
   const [personals, setPersonals] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
-  const [editingId, setEditingId] = useState(null); 
+  const [editingId, setEditingId] = useState(null);
   const [newPerson, setNewPerson] = useState({
     firstname: "",
     lastname: "",
@@ -23,11 +28,7 @@ const Home = () => {
 
   const addPerson = async () => {
     try {
-      await axios.post(`${URL}`, newPerson, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await axios.post(URL, newPerson, { headers: HEADERS });
       await getPersonal();
       setIsAdding(false);
       setNewPerson({
@@ -43,11 +44,7 @@ const Home = () => {
 
   const updatePerson = async () => {
     try {
-      await axios.put(`${URL}${editingId}/`, newPerson, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await axios.patch(`${URL}?id=eq.${editingId}`, newPerson, { headers: HEADERS });
       await getPersonal();
       setEditingId(null);
       setNewPerson({
@@ -63,7 +60,7 @@ const Home = () => {
 
   const deletePerson = async (id) => {
     try {
-      await axios.delete(`${URL}${id}/`);
+      await axios.delete(`${URL}?id=eq.${id}`, { headers: HEADERS });
       await getPersonal();
     } catch (error) {
       console.error("Hata:", error.message);
@@ -72,7 +69,7 @@ const Home = () => {
 
   const getPersonal = async () => {
     try {
-      const { data } = await axios.get(URL);
+      const { data } = await axios.get(URL, { headers: HEADERS });
       setPersonals(data);
     } catch (error) {
       console.error("Hata:", error.message);
